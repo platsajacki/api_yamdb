@@ -1,7 +1,7 @@
 import datetime as dt
 
 from django.db import models
-from django.core.validators import MaxValueValidator
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 
 class Category(models.Model):
@@ -76,3 +76,69 @@ class GenreTitle(models.Model):
         Возвращает строковое представление жанра и произведения
         """
         return f"{self.title} - {self.genre}"
+
+
+class Review(models.Model):
+    """
+        Модель для отзывов
+    """
+    title = models.ForeignKey(
+        Title,
+        on_delete=models.CASCADE,
+        related_name="reviews",
+        verbose_name="Произведение"
+    )
+    text = models.CharField(
+        max_length=200
+    )
+    score = models.IntegerField(
+        verbose_name="Оценка",
+        validators=(
+            MinValueValidator(1),
+            MaxValueValidator(10)
+        )
+    )
+    # author = models.ForeignKey(
+    #   User,
+    #   on_delete=models.CASCADE,
+    #   related_name="reviews"
+    #   verbose_name="Автор"
+    # )
+    pub_date = models.DateTimeField(
+        verbose_name="Дата публикации",
+        auto_now_add=True,
+    )
+
+    class Meta:
+        verbose_name = "Отзыв"
+        verbose_name_plural = "Отзывы"
+
+    def __str__(self):
+        return self.text
+
+
+class Comment(models.Model):
+    """
+        Модель для комментариев
+    """
+    review = models.ForeignKey(
+        Review,
+        on_delete=models.CASCADE,
+        related_name="comments",
+        verbose_name="Отзыв",
+    )
+    text = models.CharField(
+        verbose_name="Текст",
+        max_length=200
+    )
+    pub_date = models.DateTimeField(
+        verbose_name="Дата публикации",
+        auto_now_add=True,
+    )
+
+    class Meta:
+        verbose_name = "Комментарий"
+        verbose_name_plural = "Комментарии"
+
+    def __str__(self):
+        return self.text
