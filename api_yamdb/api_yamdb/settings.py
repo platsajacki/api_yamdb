@@ -22,10 +22,11 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    'rest_framework',
-    'reviews.apps.ReviewsConfig',
-    'api.apps.ApiConfig',
+    'reviews',
+    'api',
     'users',
+
+    'rest_framework',
 ]
 
 AUTH_USER_MODEL = 'users.User'

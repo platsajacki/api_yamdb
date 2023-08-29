@@ -5,39 +5,29 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 
 
 class Category(models.Model):
-    """
-    Модель для хранения информации о категории произведения.
-    """
+    """Модель для хранения информации о категории произведения."""
 
     name = models.CharField("Название", max_length=255)
     slug = models.SlugField("Слаг", max_length=255, unique=True)
 
     def __str__(self) -> str:
-        """
-        Возвращает строковое представление категории (ее название).
-        """
+        """Возвращает строковое представление категории (ее название)."""
         return self.name
 
 
 class Genre(models.Model):
-    """
-    Модель для хранения информации о жанре произведения.
-    """
+    """Модель для хранения информации о жанре произведения."""
 
     name = models.CharField("Название", max_length=255)
     slug = models.SlugField("Слаг", max_length=255)
 
     def __str__(self) -> str:
-        """
-        Возвращает строковое представление жанра (его название).
-        """
+        """Возвращает строковое представление жанра (его название)."""
         return self.name
 
 
 class Title(models.Model):
-    """
-    Модель для хранения информации о произведении.
-    """
+    """Модель для хранения информации о произведении."""
 
     name = models.CharField("Название", max_length=255)
     year = models.PositiveSmallIntegerField(
@@ -57,16 +47,12 @@ class Title(models.Model):
     genre = models.ManyToManyField(Genre, through="GenreTitle")
 
     def __str__(self) -> str:
-        """
-        Возвращает строковое представление произведения (его название).
-        """
+        """Возвращает строковое представление произведения (его название)."""
         return self.name
 
 
 class GenreTitle(models.Model):
-    """
-    Промежуточная модель для хранения ключей genre и title
-    """
+    """Промежуточная модель для хранения ключей genre и title."""
 
     genre = models.ForeignKey(
         Genre, on_delete=models.SET_NULL, null=True, verbose_name="Жанр"
@@ -76,16 +62,12 @@ class GenreTitle(models.Model):
     )
 
     def __str__(self) -> str:
-        """
-        Возвращает строковое представление жанра и произведения
-        """
+        """Возвращает строковое представление жанра и произведения."""
         return f"{self.title} - {self.genre}"
 
 
 class Review(models.Model):
-    """
-    Модель для отзывов
-    """
+    """Модель для отзывов."""
 
     title = models.ForeignKey(
         Title,
@@ -108,16 +90,12 @@ class Review(models.Model):
         verbose_name_plural = "Отзывы"
 
     def __str__(self) -> str:
-        """
-        Возвращает строковое представление отзыва
-        """
+        """Возвращает строковое представление отзыва."""
         return self.text
 
 
 class Comment(models.Model):
-    """
-    Модель для комментариев
-    """
+    """Модель для комментариев."""
 
     review = models.ForeignKey(
         Review,
@@ -136,7 +114,5 @@ class Comment(models.Model):
         verbose_name_plural = "Комментарии"
 
     def __str__(self) -> str:
-        """
-        Возвращает строковое представление комментария
-        """
+        """Возвращает строковое представление комментария."""
         return self.text
