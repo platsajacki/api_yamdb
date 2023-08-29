@@ -22,6 +22,6 @@ class User(AbstractUser):
         default='user'
     )
 
-    REQUIRED_FIELDS = ["email", "username"]
+    REQUIRED_FIELDS = ["email", ]
 
     objects = UserManager()
