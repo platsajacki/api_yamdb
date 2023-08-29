@@ -1,7 +1,10 @@
 import datetime as dt
 
+from django.contrib.auth import get_user_model
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
+
+User = get_user_model()
 
 
 class Category(models.Model):
@@ -75,7 +78,13 @@ class Review(models.Model):
         related_name="reviews",
         verbose_name="Произведение",
     )
-    text = models.CharField(max_length=200)
+    text = models.TextField(verbose_name="Текст")
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="reviews",
+        verbose_name="Автор"
+    )
     score = models.IntegerField(
         verbose_name="Оценка",
         validators=(MinValueValidator(1), MaxValueValidator(10)),
@@ -88,6 +97,11 @@ class Review(models.Model):
     class Meta:
         verbose_name = "Отзыв"
         verbose_name_plural = "Отзывы"
+        constraints = [
+            models.UniqueConstraint(
+                fields=['author', 'title']
+            )
+        ]
 
     def __str__(self) -> str:
         """Возвращает строковое представление отзыва."""
@@ -103,7 +117,13 @@ class Comment(models.Model):
         related_name="comments",
         verbose_name="Отзыв",
     )
-    text = models.CharField(verbose_name="Текст", max_length=200)
+    text = models.TextField(verbose_name="Текст")
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="comments",
+        verbose_name="Автор"
+    )
     pub_date = models.DateTimeField(
         verbose_name="Дата публикации",
         auto_now_add=True,
