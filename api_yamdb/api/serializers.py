@@ -5,18 +5,24 @@ from reviews.models import Category, Title, Genre, GenreTitle
 
 
 class CategorySerializer(serializers.ModelSerializer):
+    """Сеарилизатор для модели категорий."""
+
     class Meta:
         model = Category
         fields = ("name", "slug")
 
 
 class GenreSerializer(serializers.ModelSerializer):
+    """Сеарилизатор для модели жанров."""
+
     class Meta:
         model = Genre
         fields = ("name", "slug")
 
 
 class TitleSerializer(serializers.ModelSerializer):
+    """Сеарилизатор для модели произведений."""
+
     genre = GenreSerializer(many=True)
     # TODO: title rating
     rating = serializers.IntegerField(read_only=True)
@@ -35,6 +41,10 @@ class TitleSerializer(serializers.ModelSerializer):
         )
 
     def create(self, validated_data):
+        """
+        Создает и возвращает новый экземпляр модели Title
+        на основе переданных данных.
+        """
         genres = validated_data.pop("genre")
         title = Title.objects.create(**validated_data)
         for genre in genres:
