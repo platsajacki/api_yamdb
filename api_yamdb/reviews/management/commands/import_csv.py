@@ -45,6 +45,14 @@ class Command(BaseCommand):
                 ).exists()
 
                 if not model_exists:
+                    if "author" in field_names:
+                        author_id = data.pop("author")
+                        try:
+                            author = User.objects.get(username=author_id)
+                        except User.DoesNotExist:
+                            author = User.objects.create(username=author_id)
+                        data["author"] = author
+
                     model_class.objects.create(**data)
                     self.stdout.write(
                         self.style.SUCCESS(
@@ -79,13 +87,13 @@ class Command(BaseCommand):
     def import_reviews(self) -> None:
         """Импортирует отзывы из файла review.csv."""
         file_path = f"{DATA_DIR}/review.csv"
-        field_names = ["id", "title_id", "text", "score", "pub_date"]
+        field_names = ["id", "title_id", "text", "author", "score", "pub_date"]
         self.import_data_from_csv(file_path, Review, field_names)
 
     def import_comments(self) -> None:
         """Импортирует комментарии из файла comments.csv."""
         file_path = f"{DATA_DIR}/comments.csv"
-        field_names = ["id", "review_id", "text", "pub_date"]
+        field_names = ["id", "review_id", "text", "author", "pub_date"]
         self.import_data_from_csv(file_path, Comment, field_names)
 
     def import_genre_title(self) -> None:
