@@ -110,8 +110,8 @@ class ReviewSerializers(serializers.ModelSerializer):
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
     """Сериализатор регистрации пользователя."""
-    username = serializers.CharField(required=True, max_length=150)
-    email = serializers.EmailField(required=True, max_length=254)
+    username = serializers.CharField(max_length=150)
+    email = serializers.EmailField(max_length=254)
 
     class Meta:
         model = User
@@ -131,8 +131,8 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
 class UserTokenSerializer(serializers.ModelSerializer):
     """Сериализатор для подтверждения токенов пользователя."""
-    username = serializers.CharField(required=True)
-    confirmation_code = serializers.CharField(required=True)
+    username = serializers.CharField()
+    confirmation_code = serializers.CharField()
 
     class Meta:
         model = User
