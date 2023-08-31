@@ -1,5 +1,7 @@
 from pathlib import Path
 
+from constants import LIFE_CONFIRMATION_CODE
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -21,9 +23,11 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+
     "reviews",
     "api",
     "users",
+
     "rest_framework",
     "rest_framework_simplejwt",
 ]
@@ -113,4 +117,20 @@ STATICFILES_DIRS = ((BASE_DIR / "static/"),)
 REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 5,
+}
+
+# EMAIL BACKEND
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# Cache
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'cache_table',
+        'OPTIONS': {
+            'TIMEOUT': LIFE_CONFIRMATION_CODE,
+        }
+    }
 }

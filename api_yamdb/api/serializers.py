@@ -1,7 +1,9 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
+from constants import LENGTH_CODE
 from reviews.models import Category, Title, Genre, Review, Comment
+from users.models import User
 
 
 class LookUpSlugFieldMixin:
@@ -102,3 +104,43 @@ class ReviewSerializers(serializers.ModelSerializer):
         if Review.objects.filter(author=author, title=title).exists():
             raise serializers.ValidationError("Вы уже оставили отзыв!!!")
         return data
+
+
+class UserRegistrationSerializer(serializers.ModelSerializer):
+    """Сериализатор регистрации пользователя."""
+    username = serializers.CharField(max_length=150)
+    email = serializers.EmailField(max_length=254)
+
+    class Meta:
+        model = User
+        fields = (
+            'username',
+            'email'
+        )
+
+    def validate_username(self, value: str) -> str:
+        """Проверка имени пользователя на недопустимые значения."""
+        if value.lower() == 'me':
+            raise serializers.ValidationError(
+                'Имя пользователя "me" недопустимо.'
+            )
+        return value
+
+
+class UserTokenSerializer(serializers.ModelSerializer):
+    """Сериализатор для подтверждения токенов пользователя."""
+    username = serializers.CharField()
+    confirmation_code = serializers.CharField()
+
+    class Meta:
+        model = User
+        fields = (
+            'username',
+            'confirmation_code'
+        )
+
+    def validate_confirmation_code(self, value: str) -> str:
+        """Проверка кода подтверждения."""
+        if len(value) == LENGTH_CODE:
+            return value
+        raise serializers.ValidationError('Некорректный код подтверждения.')
