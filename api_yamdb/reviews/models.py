@@ -60,7 +60,7 @@ class Title(models.Model):
 
     def __str__(self) -> str:
         """Возвращает строковое представление произведения (его название)."""
-        return self.category
+        return self.name
 
 
 class GenreTitle(models.Model):

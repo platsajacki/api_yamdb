@@ -31,13 +31,11 @@ class CreateListDestroyViewSet(
     Миксин для добавления возможности создания,
     получения списка и удаления объектов модели
     """
-
     ...
 
 
 class TitleViewSet(viewsets.ModelViewSet):
     """Представление для работы с объектами модели Title"""
-
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
 
@@ -50,7 +48,6 @@ class TitleViewSet(viewsets.ModelViewSet):
 
 class CategoryViewSet(CreateListDestroyViewSet):
     """Представление для работы с объектами модели Category"""
-
     serializer_class = CategorySerializer
     queryset = Category.objects.all()
     lookup_field = "slug"
@@ -58,7 +55,6 @@ class CategoryViewSet(CreateListDestroyViewSet):
 
 class GenreViewSet(CreateListDestroyViewSet):
     """Представление для работы с объектами модели Genre"""
-
     serializer_class = GenreSerializer
     queryset = Genre.objects.all()
     lookup_field = "slug"
