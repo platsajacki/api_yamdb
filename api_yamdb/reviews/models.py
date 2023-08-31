@@ -104,11 +104,12 @@ class Review(models.Model):
     class Meta:
         verbose_name = "Отзыв"
         verbose_name_plural = "Отзывы"
-        constraints = [
+        constraints = (
             models.UniqueConstraint(
-                fields=['author', 'title']
-            )
-        ]
+                fields=['author', 'title'],
+                name="Unique_review"
+            ),
+        )
 
     def __str__(self) -> str:
         """Возвращает строковое представление отзыва."""
