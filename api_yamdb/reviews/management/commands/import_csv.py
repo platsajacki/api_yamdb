@@ -19,13 +19,13 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options) -> None:
         """ызов и обработка всех команд импорта из csv-файлов."""
+        self.import_users()
         self.import_categories()
         self.import_genres()
         self.import_titles()
         self.import_reviews()
         self.import_comments()
         self.import_genre_title()
-        self.import_users()
 
     def import_data_from_csv(
         self,
@@ -47,10 +47,7 @@ class Command(BaseCommand):
                 if not model_exists:
                     if "author" in field_names:
                         author_id = data.pop("author")
-                        try:
-                            author = User.objects.get(username=author_id)
-                        except User.DoesNotExist:
-                            author = User.objects.create(username=author_id)
+                        author = User.objects.get(id=author_id)
                         data["author"] = author
 
                     model_class.objects.create(**data)

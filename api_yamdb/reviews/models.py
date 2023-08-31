@@ -9,9 +9,12 @@ User = get_user_model()
 
 class Category(models.Model):
     """Модель для хранения информации о категории произведения."""
+    name = models.CharField("Название", max_length=256)
+    slug = models.SlugField("Слаг", max_length=50, unique=True)
 
-    name = models.CharField("Название", max_length=255)
-    slug = models.SlugField("Слаг", max_length=255, unique=True)
+    class Meta:
+        verbose_name = "Категория"
+        verbose_name_plural = "Категории"
 
     def __str__(self) -> str:
         """Возвращает строковое представление категории (ее название)."""
@@ -20,9 +23,12 @@ class Category(models.Model):
 
 class Genre(models.Model):
     """Модель для хранения информации о жанре произведения."""
+    name = models.CharField("Название", max_length=256)
+    slug = models.SlugField("Слаг", max_length=50, unique=True)
 
-    name = models.CharField("Название", max_length=255)
-    slug = models.SlugField("Слаг", max_length=255)
+    class Meta:
+        verbose_name = "Жанр"
+        verbose_name_plural = "Жанры"
 
     def __str__(self) -> str:
         """Возвращает строковое представление жанра (его название)."""
@@ -31,8 +37,7 @@ class Genre(models.Model):
 
 class Title(models.Model):
     """Модель для хранения информации о произведении."""
-
-    name = models.CharField("Название", max_length=255)
+    name = models.CharField("Название", max_length=256)
     year = models.PositiveSmallIntegerField(
         "Год выхода",
         validators=[
@@ -49,14 +54,17 @@ class Title(models.Model):
     )
     genre = models.ManyToManyField(Genre, through="GenreTitle")
 
+    class Meta:
+        verbose_name = "Произведение"
+        verbose_name_plural = "Произведения"
+
     def __str__(self) -> str:
         """Возвращает строковое представление произведения (его название)."""
-        return self.name
+        return self.category
 
 
 class GenreTitle(models.Model):
     """Промежуточная модель для хранения ключей genre и title."""
-
     genre = models.ForeignKey(
         Genre, on_delete=models.SET_NULL, null=True, verbose_name="Жанр"
     )
@@ -71,7 +79,6 @@ class GenreTitle(models.Model):
 
 class Review(models.Model):
     """Модель для отзывов."""
-
     title = models.ForeignKey(
         Title,
         on_delete=models.CASCADE,
@@ -99,7 +106,7 @@ class Review(models.Model):
         verbose_name_plural = "Отзывы"
         constraints = [
             models.UniqueConstraint(
-                fields=['author', 'title']
+                fields=['author', 'title'], name='#'
             )
         ]
 
@@ -110,7 +117,6 @@ class Review(models.Model):
 
 class Comment(models.Model):
     """Модель для комментариев."""
-
     review = models.ForeignKey(
         Review,
         on_delete=models.CASCADE,
