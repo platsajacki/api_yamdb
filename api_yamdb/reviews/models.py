@@ -57,6 +57,12 @@ class Title(models.Model):
     class Meta:
         verbose_name = "Произведение"
         verbose_name_plural = "Произведения"
+        constraints = (
+            models.UniqueConstraint(
+                fields=['genre', 'category'],
+                name="unique_genre_category"
+            ),
+        )
 
     def __str__(self) -> str:
         """Возвращает строковое представление произведения (его название)."""
