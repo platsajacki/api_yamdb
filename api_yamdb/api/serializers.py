@@ -138,8 +138,6 @@ class UserTokenSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     """Сериализатор для обработки запросов к модели User."""
-    first_name = serializers.CharField(max_length=150)
-
     class Meta:
         model = User
         fields = (
