@@ -119,7 +119,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
 class UserTokenSerializer(serializers.ModelSerializer):
     """Сериализатор для подтверждения токенов пользователя."""
-    username = serializers.CharField()
+    username = serializers.CharField(max_length=150)
     confirmation_code = serializers.CharField()
 
     class Meta:
@@ -134,3 +134,25 @@ class UserTokenSerializer(serializers.ModelSerializer):
         if len(value) == LENGTH_CODE:
             return value
         raise serializers.ValidationError('Некорректный код подтверждения.')
+
+
+class UserSerializer(serializers.ModelSerializer):
+    """Сериализатор для обработки запросов к модели User."""
+    class Meta:
+        model = User
+        fields = (
+            'username',
+            'email',
+            'first_name',
+            'last_name',
+            'bio',
+            'role',
+        )
+
+    def validate_role(self, value):
+        user = self.context['request'].user
+        if user.is_staff:
+            return value
+        raise serializers.ValidationError(
+            'Назначать роль моджет только администратор.'
+        )
