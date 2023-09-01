@@ -6,6 +6,7 @@ from django.db.utils import IntegrityError
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django.utils.crypto import get_random_string
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError, APIException
@@ -17,7 +18,6 @@ from rest_framework_simplejwt.tokens import Token, RefreshToken
 from rest_framework import status
 from rest_framework import viewsets
 from rest_framework.exceptions import MethodNotAllowed
-from django_filters.rest_framework import DjangoFilterBackend
 
 from .serializers import (
     UserRegistrationSerializer,
