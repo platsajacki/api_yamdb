@@ -3,7 +3,7 @@ from typing import Any
 from django.core.cache import cache
 from django.core.mail import send_mail
 from django.db.utils import IntegrityError
-from django.db.models import Avg
+from django.db.models import Avg, QuerySet
 from django.shortcuts import get_object_or_404
 from django.utils.crypto import get_random_string
 from django_filters.rest_framework import DjangoFilterBackend
@@ -11,7 +11,11 @@ from rest_framework import generics, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError, APIException
 from rest_framework.filters import SearchFilter
-from rest_framework.permissions import IsAdminUser, IsAuthenticated
+from rest_framework.permissions import (
+    IsAdminUser,
+    IsAuthenticated,
+    IsAuthenticatedOrReadOnly,
+)
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework_simplejwt.tokens import Token, RefreshToken
@@ -35,6 +39,7 @@ from .serializers import (
 )
 from reviews.models import Title, Category, Genre, Review
 from .mixins import CreateListDestroyViewSet
+from .permissions import AllowAdminOrAnonymousPermission
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
@@ -48,7 +53,11 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """Получаем отзывы для произведения."""
-        return self.get_title().reviews.select_related('author')
+        return (
+            self.get_title()
+            .reviews.select_related("author")
+            .order_by("-pub_date")
+        )
 
     def perform_create(self, serializer):
         """Создаем отзыв.Присваеваем текущего пользователя и произведение."""
@@ -65,7 +74,11 @@ class CommentViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """Получаем комментарии для отзыва."""
-        return self.get_review().comments.select_related('author')
+        return (
+            self.get_review()
+            .comments.select_related("author")
+            .order_by("-pub_date")
+        )
 
     def perform_create(self, serializer):
         """Создаем комментарий.Присваеваем текущего пользователя и отзыв."""
@@ -79,19 +92,25 @@ class TitleViewSet(viewsets.ModelViewSet):
     filter_backends = (SearchFilter, DjangoFilterBackend)
     search_fields = ('name', 'genre__slug', 'category__slug')
     filterset_fields = ('year', 'name')
+    permission_classes = (
+        IsAuthenticatedOrReadOnly,
+        AllowAdminOrAnonymousPermission
+    )
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet:
         """Формирует и возвращает queryset."""
-        queryset = super().get_queryset()
-        genre_slug = self.request.query_params.get('genre')
-        category_slug = self.request.query_params.get('category')
+        queryset: QuerySet = super().get_queryset()
+        genre_slug: str = self.request.query_params.get('genre')
+        category_slug: str = self.request.query_params.get('category')
         if genre_slug:
             queryset = queryset.filter(genre__slug=genre_slug)
         if category_slug:
             queryset = queryset.filter(category__slug=category_slug)
-        return queryset.annotate(rating=Avg('reviews__score'))
+        return queryset.order_by("-year").annotate(
+            rating=Avg("reviews__score")
+        )
 
-    def update(self, request, *args, **kwargs):
+    def update(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """Запрещает использовать метод PUT."""
         if request.method == 'PUT':
             raise MethodNotAllowed(request.method)
@@ -101,19 +120,27 @@ class TitleViewSet(viewsets.ModelViewSet):
 class CategoryViewSet(CreateListDestroyViewSet):
     """Представление для работы с объектами модели Category."""
     serializer_class = CategorySerializer
-    queryset = Category.objects.all()
+    queryset = Category.objects.all().order_by('id', 'name')
     lookup_field = 'slug'
     filter_backends = (SearchFilter,)
     search_fields = ('name',)
+    permission_classes = (
+        IsAuthenticatedOrReadOnly,
+        AllowAdminOrAnonymousPermission,
+    )
 
 
 class GenreViewSet(CreateListDestroyViewSet):
     """Представление для работы с объектами модели Genre."""
     serializer_class = GenreSerializer
-    queryset = Genre.objects.all()
+    queryset = Genre.objects.all().order_by('id', 'name')
     lookup_field = 'slug'
     filter_backends = (SearchFilter,)
     search_fields = ('name',)
+    permission_classes = (
+        IsAuthenticatedOrReadOnly,
+        AllowAdminOrAnonymousPermission,
+    )
 
 
 class UserRegistrationView(generics.CreateAPIView):
