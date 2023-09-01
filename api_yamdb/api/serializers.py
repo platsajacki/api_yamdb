@@ -70,7 +70,7 @@ class CommentSerializers(serializers.ModelSerializer):
 
     class Meta:
         fields = ("id", "review", "author", "text", "pub_date")
-        models = Comment
+        model = Comment
 
 
 class ReviewSerializers(serializers.ModelSerializer):
@@ -82,7 +82,7 @@ class ReviewSerializers(serializers.ModelSerializer):
 
     class Meta:
         fields = ("id", "title", "text", "author", "score", "pub_date")
-        models = Review
+        model = Review
 
     def validate(self, data):
         """Проверка на то, чтобы пользователь оставлял только один отзыв."""
