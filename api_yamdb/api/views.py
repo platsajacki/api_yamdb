@@ -5,14 +5,19 @@ from django.core.mail import send_mail
 from django.db.utils import IntegrityError
 from django.shortcuts import get_object_or_404
 from django.utils.crypto import get_random_string
-from rest_framework import generics
+from rest_framework import generics, viewsets
+from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError, APIException
+from rest_framework.filters import SearchFilter
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework_simplejwt.tokens import Token, RefreshToken
 from rest_framework import status
 
-from .serializers import UserRegistrationSerializer, UserTokenSerializer
+from .serializers import (
+    UserRegistrationSerializer, UserTokenSerializer, UserSerializer
+)
 from constants import LENGTH_CODE
 from users.models import User
 
@@ -84,3 +89,23 @@ class UserTokenView(generics.CreateAPIView):
             {'confirmation_code': ['Код подтверждения введен неверно.']},
             status=status.HTTP_400_BAD_REQUEST
         )
+
+
+class UserViewSet(viewsets.ModelViewSet):
+    serializer_class = UserSerializer
+    queryset = User.objects
+    lookup_field = 'username'
+    http_method_names = [
+        'get', 'post', 'patch', 'delete'
+    ]
+    permission_classes = [IsAdminUser]
+    filter_backends = (SearchFilter,)
+    search_fields = ('username',)
+
+    @action(
+        detail=False, methods=['get', 'post'],
+        permission_classes=[IsAuthenticated]
+    )
+    def me(self, request):
+        serializer = self.get_serializer(request.user)
+        return Response(serializer.data)

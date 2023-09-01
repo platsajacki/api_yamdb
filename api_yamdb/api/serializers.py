@@ -71,7 +71,7 @@ class CommentSerializers(serializers.ModelSerializer):
             "text",
             "pub_date"
         )
-        models = Comment
+        model = Comment
 
 
 class ReviewSerializers(serializers.ModelSerializer):
@@ -94,7 +94,7 @@ class ReviewSerializers(serializers.ModelSerializer):
             "score",
             "pub_date"
         )
-        models = Review
+        model = Review
 
     def validate(self, data):
         """Проверка на то, чтобы пользователь оставлял только один отзыв."""
@@ -131,7 +131,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
 class UserTokenSerializer(serializers.ModelSerializer):
     """Сериализатор для подтверждения токенов пользователя."""
-    username = serializers.CharField()
+    username = serializers.CharField(max_length=150)
     confirmation_code = serializers.CharField()
 
     class Meta:
@@ -146,3 +146,25 @@ class UserTokenSerializer(serializers.ModelSerializer):
         if len(value) == LENGTH_CODE:
             return value
         raise serializers.ValidationError('Некорректный код подтверждения.')
+
+
+class UserSerializer(serializers.ModelSerializer):
+    """Сериализатор для обработки запросов к модели User."""
+    class Meta:
+        model = User
+        fields = (
+            'username',
+            'email',
+            'first_name',
+            'last_name',
+            'bio',
+            'role',
+        )
+
+    def validate_role(self, value):
+        user = self.context['request'].user
+        if user.is_staff:
+            return value
+        raise serializers.ValidationError(
+            'Назначать роль моджет только администратор.'
+        )
