@@ -34,6 +34,7 @@ from .mixins import CreateListDestroyViewSet
 class ReviewViewSet(viewsets.ModelViewSet):
     """ViewSet для модели отзывов."""
     serializer_class = ReviewSerializers
+    permission_classes = [IsAuthenticated]
 
     def get_title(self):
         """Получаем произведение."""
