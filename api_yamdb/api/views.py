@@ -177,6 +177,7 @@ class UserTokenView(generics.CreateAPIView):
 
 
 class UserViewSet(viewsets.ModelViewSet):
+    """ Представление для работы с пользователями в системе."""
     serializer_class = UserSerializer
     queryset = User.objects
     lookup_field = 'username'
@@ -190,6 +191,7 @@ class UserViewSet(viewsets.ModelViewSet):
         methods=['get', 'post'],
         permission_classes=[IsAuthenticated],
     )
-    def me(self, request):
-        serializer = self.get_serializer(request.user)
+    def me(self, request: Request) -> Response:
+        """Получает информацию о текущем пользователе."""
+        serializer: UserSerializer = self.get_serializer(request.user)
         return Response(serializer.data)
