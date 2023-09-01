@@ -11,10 +11,41 @@ from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework_simplejwt.tokens import Token, RefreshToken
 from rest_framework import status
+from rest_framework import viewsets
+from rest_framework.exceptions import MethodNotAllowed
 
 from .serializers import UserRegistrationSerializer, UserTokenSerializer
 from constants import LENGTH_CODE
 from users.models import User
+from .serializers import TitleSerializer, CategorySerializer, GenreSerializer
+from reviews.models import Title, Category, Genre
+from .mixins import CreateListDestroyViewSet
+
+
+class TitleViewSet(viewsets.ModelViewSet):
+    """Представление для работы с объектами модели Title."""
+    queryset = Title.objects.all()
+    serializer_class = TitleSerializer
+
+    def update(self, request, *args, **kwargs):
+        """Запрещает использовать метод PUT"""
+        if request.method == "PUT":
+            raise MethodNotAllowed(request.method)
+        return super().update(request, *args, **kwargs)
+
+
+class CategoryViewSet(CreateListDestroyViewSet):
+    """Представление для работы с объектами модели Category."""
+    serializer_class = CategorySerializer
+    queryset = Category.objects.all()
+    lookup_field = "slug"
+
+
+class GenreViewSet(CreateListDestroyViewSet):
+    """Представление для работы с объектами модели Genre."""
+    serializer_class = GenreSerializer
+    queryset = Genre.objects.all()
+    lookup_field = "slug"
 
 
 class UserRegistrationView(generics.CreateAPIView):

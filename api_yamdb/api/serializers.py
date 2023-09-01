@@ -2,18 +2,19 @@ from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
 from constants import LENGTH_CODE
-from reviews.models import Category, Title, Genre, GenreTitle, Review, Comment
+from reviews.models import Category, Title, Genre, Review, Comment
 from users.models import User
+from .mixins import LookUpSlugFieldMixin
 
 
-class CategorySerializer(serializers.ModelSerializer):
+class CategorySerializer(serializers.ModelSerializer, LookUpSlugFieldMixin):
     """Сериализатор для модели категорий."""
     class Meta:
         model = Category
         fields = ("name", "slug")
 
 
-class GenreSerializer(serializers.ModelSerializer):
+class GenreSerializer(serializers.ModelSerializer, LookUpSlugFieldMixin):
     """Сериализатор для модели жанров."""
     class Meta:
         model = Genre
@@ -22,10 +23,14 @@ class GenreSerializer(serializers.ModelSerializer):
 
 class TitleSerializer(serializers.ModelSerializer):
     """Сериализатор для модели произведений."""
-    genre = GenreSerializer(many=True)
-    # TODO: title rating
+    category = serializers.SlugRelatedField(
+        slug_field="slug", queryset=Category.objects.all()
+    )
+    # TODO: rating
     rating = serializers.IntegerField(read_only=True)
-    category = CategorySerializer(read_only=True)
+    genre = serializers.SlugRelatedField(
+        slug_field="slug", queryset=Genre.objects.all(), many=True
+    )
 
     class Meta:
         model = Title
@@ -39,61 +44,44 @@ class TitleSerializer(serializers.ModelSerializer):
             "category",
         )
 
-    def create(self, validated_data):
-        """
-        Создает и возвращает новый экземпляр модели Title
-        на основе переданных данных.
-        """
-        genres = validated_data.pop("genre")
-        title = Title.objects.create(**validated_data)
-        for genre in genres:
-            current_genre, _ = Genre.objects.get_or_create(**genre)
-            GenreTitle.objects.create(genre=current_genre, title=title)
-        return title
+    def to_representation(self, instance):
+        """Готовит данные для отправки в ответе."""
+        representation = super().to_representation(instance)
+        representation["category"] = {
+            "name": instance.category.name,
+            "slug": instance.category.slug,
+        }
+        representation["genre"] = [
+            {
+                "name": genre.name,
+                "slug": genre.slug,
+            }
+            for genre in instance.genre.all()
+        ]
+        return representation
 
 
 class CommentSerializers(serializers.ModelSerializer):
-    """Сеарилизатор для модели Комментариев."""
+    """Сериализатор для модели Комментариев."""
     author = serializers.SlugRelatedField(
-        slug_field="username",
-        read_only=True
+        slug_field="username", read_only=True
     )
-    review = serializers.SlugRelatedField(
-        slug_field="text",
-        read_only=True
-    )
+    review = serializers.SlugRelatedField(slug_field="text", read_only=True)
 
     class Meta:
-        fields = (
-            "id",
-            "review",
-            "author",
-            "text",
-            "pub_date"
-        )
+        fields = ("id", "review", "author", "text", "pub_date")
         models = Comment
 
 
 class ReviewSerializers(serializers.ModelSerializer):
-    """Сеарилизатор для модели Отзывов."""
+    """Сериализатор для модели Отзывов."""
     author = serializers.SlugRelatedField(
-        slug_field="username",
-        read_only=True
+        slug_field="username", read_only=True
     )
-    title = serializers.SlugRelatedField(
-        slug_field="name",
-        read_only=True
-    )
+    title = serializers.SlugRelatedField(slug_field="name", read_only=True)
 
     class Meta:
-        fields = (
-            "id",
-            "title",
-            "text",
-            "author",
-            "score",
-            "pub_date"
-        )
+        fields = ("id", "title", "text", "author", "score", "pub_date")
         models = Review
 
     def validate(self, data):
