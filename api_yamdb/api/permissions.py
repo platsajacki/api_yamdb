@@ -15,6 +15,7 @@ class AllowAdminOrAnonymousPermission(permissions.BasePermission):
 class AuthorModeratorAdminPermission(permissions.BasePermission):
     """Для aутентифициризванныx пользователей с ролью Admin,Moderator
     и Автору.Либо аннониму только безопасные запросы."""
+
     def has_object_permission(self, request, view, obj):
         return (
             request.method in permissions.SAFE_METHODS
