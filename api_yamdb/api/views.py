@@ -49,7 +49,10 @@ class ReviewViewSet(viewsets.ModelViewSet):
     """ViewSet для модели отзывов."""
     serializer_class = ReviewSerializers
     http_method_names = ['get', 'post', 'delete', 'patch']
-    permission_classes = [AuthorModeratorAdminPermission]
+    permission_classes = [
+        IsAuthenticatedOrReadOnly,
+        AuthorModeratorAdminPermission
+    ]
 
     def get_title(self):
         """Получаем произведение."""
@@ -72,7 +75,10 @@ class CommentViewSet(viewsets.ModelViewSet):
     """ViewSet для модели комментариев."""
     serializer_class = CommentSerializers
     http_method_names = ['get', 'post', 'delete', 'patch']
-    permission_classes = [AuthorModeratorAdminPermission]
+    permission_classes = [
+        IsAuthenticatedOrReadOnly,
+        AuthorModeratorAdminPermission
+    ]
 
     def get_review(self):
         """Получаем отзыв."""
