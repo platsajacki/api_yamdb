@@ -71,7 +71,7 @@ class CommentSerializers(serializers.ModelSerializer):
             "text",
             "pub_date"
         )
-        model = Comment
+        models = Comment
 
 
 class ReviewSerializers(serializers.ModelSerializer):
@@ -94,7 +94,7 @@ class ReviewSerializers(serializers.ModelSerializer):
             "score",
             "pub_date"
         )
-        model = Review
+        models = Review
 
     def validate(self, data):
         """Проверка на то, чтобы пользователь оставлял только один отзыв."""
