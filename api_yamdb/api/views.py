@@ -39,13 +39,20 @@ from .serializers import (
 )
 from reviews.models import Title, Category, Genre, Review
 from .mixins import CreateListDestroyViewSet
-from .permissions import AllowAdminOrAnonymousPermission
+from .permissions import (
+    AllowAdminOrAnonymousPermission,
+    AuthorModeratorAdminPermission
+)
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
     """ViewSet для модели отзывов."""
     serializer_class = ReviewSerializers
-    permission_classes = [IsAuthenticated]
+    http_method_names = ['get', 'post', 'delete', 'patch']
+    permission_classes = [
+        IsAuthenticatedOrReadOnly,
+        AuthorModeratorAdminPermission
+    ]
 
     def get_title(self):
         """Получаем произведение."""
@@ -67,6 +74,11 @@ class ReviewViewSet(viewsets.ModelViewSet):
 class CommentViewSet(viewsets.ModelViewSet):
     """ViewSet для модели комментариев."""
     serializer_class = CommentSerializers
+    http_method_names = ['get', 'post', 'delete', 'patch']
+    permission_classes = [
+        IsAuthenticatedOrReadOnly,
+        AuthorModeratorAdminPermission
+    ]
 
     def get_review(self):
         """Получаем отзыв."""
