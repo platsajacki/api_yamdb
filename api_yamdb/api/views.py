@@ -3,6 +3,7 @@ from typing import Any
 from django.core.cache import cache
 from django.core.mail import send_mail
 from django.db.utils import IntegrityError
+from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django.utils.crypto import get_random_string
 from rest_framework import generics
@@ -17,14 +18,57 @@ from rest_framework.exceptions import MethodNotAllowed
 from .serializers import UserRegistrationSerializer, UserTokenSerializer
 from constants import LENGTH_CODE
 from users.models import User
-from .serializers import TitleSerializer, CategorySerializer, GenreSerializer
-from reviews.models import Title, Category, Genre
+from .serializers import (
+    TitleSerializer, CategorySerializer, GenreSerializer, CommentSerializers,
+    ReviewSerializers
+)
+from reviews.models import Title, Category, Genre, Review
 from .mixins import CreateListDestroyViewSet
+
+
+class ReviewViewSet(viewsets.ModelViewSet):
+    """ViewSet для модели отзывов."""
+    serializer_class = ReviewSerializers
+
+    def get_title(self):
+        """Получаем произведение."""
+        return get_object_or_404(
+            Title,
+            pk=self.kwargs.get("title_id")
+        )
+
+    def get_queryset(self):
+        """Получаем отзывы для произведения."""
+        return self.get_title().reviews.select_related("author")
+
+    def perform_create(self, serializer):
+        """Создаем отзыв.Присваеваем текущего пользователя и произведение."""
+        serializer.save(author=self.request.user, title=self.get_title())
+
+
+class CommentViewSet(viewsets.ModelViewSet):
+    """ViewSet для модели комментариев."""
+    serializer_class = CommentSerializers
+
+    def get_review(self):
+        """Получаем отзыв."""
+        return get_object_or_404(
+            Review,
+            pk=self.kwargs.get("review_id")
+        )
+
+    def get_queryset(self):
+        """Получаем комментарии для отзыва."""
+        return self.get_review().comments.select_related("author")
+
+    def perform_create(self, serializer):
+        """Создаем комментарий.Присваеваем текущего пользователя и отзыв."""
+        serializer.save(author=self.request.user, review=self.get_review())
 
 
 class TitleViewSet(viewsets.ModelViewSet):
     """Представление для работы с объектами модели Title."""
-    queryset = Title.objects.all()
+    queryset = Title.objects.annotate(rating=Avg("reviews__score"))
     serializer_class = TitleSerializer
 
     def update(self, request, *args, **kwargs):
