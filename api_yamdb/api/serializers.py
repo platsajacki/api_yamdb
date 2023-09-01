@@ -138,6 +138,8 @@ class UserTokenSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     """Сериализатор для обработки запросов к модели User."""
+    first_name = serializers.CharField(max_length=150)
+
     class Meta:
         model = User
         fields = (
@@ -149,7 +151,8 @@ class UserSerializer(serializers.ModelSerializer):
             'role',
         )
 
-    def validate_role(self, value):
+    def validate_role(self, value: str) -> str:
+        """Проверяет, имеет ли текущий пользователь право назначать роли."""
         user = self.context['request'].user
         if user.is_staff:
             return value
