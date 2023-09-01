@@ -11,7 +11,7 @@ from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework_simplejwt.tokens import Token, RefreshToken
 from rest_framework import status
-from rest_framework import viewsets, mixins
+from rest_framework import viewsets
 from rest_framework.exceptions import MethodNotAllowed
 
 from .serializers import UserRegistrationSerializer, UserTokenSerializer
@@ -19,23 +19,11 @@ from constants import LENGTH_CODE
 from users.models import User
 from .serializers import TitleSerializer, CategorySerializer, GenreSerializer
 from reviews.models import Title, Category, Genre
-
-
-class CreateListDestroyViewSet(
-    mixins.CreateModelMixin,
-    mixins.ListModelMixin,
-    mixins.DestroyModelMixin,
-    viewsets.GenericViewSet,
-):
-    """
-    Миксин для добавления возможности создания,
-    получения списка и удаления объектов модели
-    """
-    ...
+from .mixins import CreateListDestroyViewSet
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    """Представление для работы с объектами модели Title"""
+    """Представление для работы с объектами модели Title."""
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
 
@@ -47,14 +35,14 @@ class TitleViewSet(viewsets.ModelViewSet):
 
 
 class CategoryViewSet(CreateListDestroyViewSet):
-    """Представление для работы с объектами модели Category"""
+    """Представление для работы с объектами модели Category."""
     serializer_class = CategorySerializer
     queryset = Category.objects.all()
     lookup_field = "slug"
 
 
 class GenreViewSet(CreateListDestroyViewSet):
-    """Представление для работы с объектами модели Genre"""
+    """Представление для работы с объектами модели Genre."""
     serializer_class = GenreSerializer
     queryset = Genre.objects.all()
     lookup_field = "slug"

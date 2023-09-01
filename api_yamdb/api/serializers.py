@@ -4,17 +4,7 @@ from rest_framework import serializers
 from constants import LENGTH_CODE
 from reviews.models import Category, Title, Genre, Review, Comment
 from users.models import User
-
-
-class LookUpSlugFieldMixin:
-    """
-    Добавляет поле 'lookup_field' со значением "slug"
-    для создания url-путей с использованием 'slug' вместо 'id'
-    """
-    class Meta:
-        abstract = True
-        lookup_field = "slug"
-        extra_kwargs = {"url": {"lookup_field": "slug"}}
+from .mixins import LookUpSlugFieldMixin
 
 
 class CategorySerializer(serializers.ModelSerializer, LookUpSlugFieldMixin):
@@ -55,7 +45,7 @@ class TitleSerializer(serializers.ModelSerializer):
         )
 
     def to_representation(self, instance):
-        """Готовит данные для отправки в ответе"""
+        """Готовит данные для отправки в ответе."""
         representation = super().to_representation(instance)
         representation["category"] = {
             "name": instance.category.name,
