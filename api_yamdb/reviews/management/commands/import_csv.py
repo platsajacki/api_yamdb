@@ -1,5 +1,5 @@
 import csv
-from typing import Type, List
+from typing import Any
 
 from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model
@@ -17,8 +17,8 @@ class Command(BaseCommand):
 
     help: str = "Импортирует данные из csv-файлов в базу данных"
 
-    def handle(self, *args, **options) -> None:
-        """ызов и обработка всех команд импорта из csv-файлов."""
+    def handle(self, *args: Any, **options: Any) -> None:
+        """Вызов и обработка всех команд импорта из csv-файлов."""
         self.import_users()
         self.import_categories()
         self.import_genres()
@@ -30,8 +30,8 @@ class Command(BaseCommand):
     def import_data_from_csv(
         self,
         file_path: str,
-        model_class: Type[models.Model],
-        field_names: List[str],
+        model_class: models.Model,
+        field_names: list[str],
     ) -> None:
         """Импортирует данные из csv-файла в базу данных."""
         with open(file_path, "r") as csv_file:
