@@ -1,5 +1,6 @@
 from typing import Any
 
+from django.core.cache import cache
 from django.db.utils import IntegrityError
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
@@ -145,9 +146,10 @@ class UserTokenSerializer(serializers.ModelSerializer):
 
     def validate_confirmation_code(self, value: str) -> str:
         """Проверка кода подтверждения."""
-        if len(value) == LENGTH_CODE:
+        username: str = self.context.get('request').data.get('username')
+        if len(value) == LENGTH_CODE and value == cache.get(username):
             return value
-        raise serializers.ValidationError('Некорректный код подтверждения.')
+        raise serializers.ValidationError('Код подтверждения введен неверно.')
 
 
 class UserSerializer(serializers.ModelSerializer):

@@ -17,7 +17,6 @@ from rest_framework.permissions import (
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework_simplejwt.tokens import Token, RefreshToken
-from rest_framework import status
 from rest_framework import viewsets
 from rest_framework.exceptions import MethodNotAllowed
 
@@ -152,7 +151,7 @@ class UserRegistrationView(generics.CreateAPIView):
         """
         user: User = serializer.save()
         confirmation_code: str = get_random_string(length=LENGTH_CODE)
-        cache.set(str(user.id), confirmation_code)
+        cache.set(user.username, confirmation_code)
         self.send_confirmation_code(user.email, confirmation_code)
 
     def send_confirmation_code(
@@ -175,15 +174,9 @@ class UserTokenView(generics.CreateAPIView):
         serializer: dict[str, str] = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         username: str = request.data['username']
-        confirmation_code: str = request.data['confirmation_code']
         user: User = get_object_or_404(User, username=username)
-        if confirmation_code == cache.get(str(user.id)):
-            refresh: Token = RefreshToken.for_user(user)
-            return Response({'token': str(refresh.access_token)})
-        return Response(
-            {'confirmation_code': ['Код подтверждения введен неверно.']},
-            status=status.HTTP_400_BAD_REQUEST,
-        )
+        refresh: Token = RefreshToken.for_user(user)
+        return Response({'token': str(refresh.access_token)})
 
 
 class UserViewSet(viewsets.ModelViewSet):
