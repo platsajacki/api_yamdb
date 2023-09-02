@@ -30,6 +30,7 @@ class CreateListDestroyViewSet(
 
 
 class CreateListDestroySearchViewSet(CreateListDestroyViewSet):
+    """Миксин для добавления возможности поиска по полю и пермишенов."""
     lookup_field = 'slug'
     filter_backends = (SearchFilter,)
     search_fields = ('name',)
