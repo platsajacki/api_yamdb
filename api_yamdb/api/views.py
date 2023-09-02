@@ -38,7 +38,7 @@ from .serializers import (
     ReviewSerializers,
 )
 from reviews.models import Title, Category, Genre, Review
-from .mixins import CreateListDestroyViewSet
+from .mixins import CreateListDestroySearchViewSet
 from .permissions import (
     AllowAdminOrAnonymousPermission,
     AuthorModeratorAdminPermission
@@ -129,30 +129,16 @@ class TitleViewSet(viewsets.ModelViewSet):
         return super().update(request, *args, **kwargs)
 
 
-class CategoryViewSet(CreateListDestroyViewSet):
+class CategoryViewSet(CreateListDestroySearchViewSet):
     """Представление для работы с объектами модели Category."""
     serializer_class = CategorySerializer
     queryset = Category.objects.all().order_by('id', 'name')
-    lookup_field = 'slug'
-    filter_backends = (SearchFilter,)
-    search_fields = ('name',)
-    permission_classes = (
-        IsAuthenticatedOrReadOnly,
-        AllowAdminOrAnonymousPermission,
-    )
 
 
-class GenreViewSet(CreateListDestroyViewSet):
+class GenreViewSet(CreateListDestroySearchViewSet):
     """Представление для работы с объектами модели Genre."""
     serializer_class = GenreSerializer
     queryset = Genre.objects.all().order_by('id', 'name')
-    lookup_field = 'slug'
-    filter_backends = (SearchFilter,)
-    search_fields = ('name',)
-    permission_classes = (
-        IsAuthenticatedOrReadOnly,
-        AllowAdminOrAnonymousPermission,
-    )
 
 
 class UserRegistrationView(generics.CreateAPIView):

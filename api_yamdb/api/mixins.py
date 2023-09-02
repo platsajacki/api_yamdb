@@ -1,4 +1,8 @@
 from rest_framework import mixins, viewsets
+from rest_framework.filters import SearchFilter
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
+
+from .permissions import AllowAdminOrAnonymousPermission
 
 
 class LookUpSlugFieldMixin:
@@ -23,3 +27,14 @@ class CreateListDestroyViewSet(
     получения списка и удаления объектов модели.
     """
     ...
+
+
+class CreateListDestroySearchViewSet(CreateListDestroyViewSet):
+    """Миксин для добавления возможности поиска по полю и пермишенов."""
+    lookup_field = 'slug'
+    filter_backends = (SearchFilter,)
+    search_fields = ('name',)
+    permission_classes = (
+        IsAuthenticatedOrReadOnly,
+        AllowAdminOrAnonymousPermission,
+    )
