@@ -1,11 +1,13 @@
 from typing import Any
 
+from django.db.utils import IntegrityError
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
+from reviews.models import Category, Comment, Genre, Review, Title
 
-from constants import LENGTH_CODE
-from reviews.models import Category, Title, Genre, Review, Comment
-from users.models import User
 from .mixins import LookUpSlugFieldMixin
+from constants import LENGTH_CODE
+from users.models import User
 
 
 class CategorySerializer(serializers.ModelSerializer, LookUpSlugFieldMixin):
@@ -104,6 +106,21 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             'username',
             'email'
         )
+
+    def create(self, validated_data: dict[str, Any]) -> User:
+        """Создает нового пользователя на основе переданных данных."""
+        try:
+            user, _ = User.objects.get_or_create(
+                username=validated_data.get('username'),
+                email=validated_data.get('email'),
+            )
+        except IntegrityError as error:
+            raise ValidationError(
+                'Такое имя пользователя уже существует.'
+                if 'username' in str(error)
+                else 'Пользователь с таким электронным адресом уже существует.'
+            )
+        return user
 
     def validate_username(self, value: str) -> str:
         """Проверка имени пользователя на недопустимые значения."""
