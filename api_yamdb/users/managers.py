@@ -19,8 +19,8 @@ class UserManager(BaseUserManager):
             raise ValueError('Необходимо указать имя пользователя.')
         if not email:
             raise ValueError('Необходимо указать электронную почту.')
-        email = self.normalize_email(email)
-        user = self.model(
+        email: str = self.normalize_email(email)
+        user: self.model = self.model(
             username=username,
             email=email,
             **extra_fields
