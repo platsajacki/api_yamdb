@@ -4,9 +4,9 @@ from django.contrib.auth.models import AbstractUser
 from .managers import UserManager
 
 ROLE_CHOICES = [
-    ("user", "Пользователь"),
-    ("moderator", "Модератор"),
-    ("admin", "Администратор"),
+    ('user', 'Пользователь'),
+    ('moderator', 'Модератор'),
+    ('admin', 'Администратор'),
 ]
 
 
@@ -28,7 +28,5 @@ class User(AbstractUser):
         choices=ROLE_CHOICES,
         default='user'
     )
-
-    REQUIRED_FIELDS = ["email", ]
 
     objects = UserManager()

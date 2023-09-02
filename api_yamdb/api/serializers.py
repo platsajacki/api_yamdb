@@ -148,7 +148,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     def validate_role(self, value: str) -> str:
         """Проверяет, имеет ли текущий пользователь право назначать роли."""
-        user = self.context['request'].user
+        user: User = self.context['request'].user
         if user.is_staff:
             return value
         raise serializers.ValidationError(
