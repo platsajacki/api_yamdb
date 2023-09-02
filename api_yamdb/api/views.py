@@ -54,11 +54,11 @@ class ReviewViewSet(viewsets.ModelViewSet):
         AuthorModeratorAdminPermission
     ]
 
-    def get_title(self):
+    def get_title(self) -> Title:
         """Получаем произведение."""
         return get_object_or_404(Title, pk=self.kwargs.get('title_id'))
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet:
         """Получаем отзывы для произведения."""
         return (
             self.get_title()
@@ -66,7 +66,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
             .order_by("-pub_date")
         )
 
-    def perform_create(self, serializer):
+    def perform_create(self, serializer: ReviewSerializers) -> None:
         """Создаем отзыв.Присваеваем текущего пользователя и произведение."""
         serializer.save(author=self.request.user, title=self.get_title())
 
@@ -80,11 +80,11 @@ class CommentViewSet(viewsets.ModelViewSet):
         AuthorModeratorAdminPermission
     ]
 
-    def get_review(self):
+    def get_review(self) -> Review:
         """Получаем отзыв."""
         return get_object_or_404(Review, pk=self.kwargs.get('review_id'))
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet:
         """Получаем комментарии для отзыва."""
         return (
             self.get_review()
@@ -92,7 +92,7 @@ class CommentViewSet(viewsets.ModelViewSet):
             .order_by("-pub_date")
         )
 
-    def perform_create(self, serializer):
+    def perform_create(self, serializer: CommentSerializers) -> None:
         """Создаем комментарий.Присваеваем текущего пользователя и отзыв."""
         serializer.save(author=self.request.user, review=self.get_review())
 

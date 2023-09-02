@@ -1,6 +1,5 @@
 from typing import Any
 
-from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
 from constants import LENGTH_CODE
@@ -83,14 +82,13 @@ class ReviewSerializers(serializers.ModelSerializer):
         fields = ('id', 'text', 'author', 'score', 'pub_date')
         model = Review
 
-    def validate(self, data):
+    def validate(self, data: dict[str, Any]) -> dict[str, Any]:
         """Проверка на то, чтобы пользователь оставлял только один отзыв."""
         if self.context.get('request').method != 'POST':
             return data
-        title_id = self.context.get('view').kwargs.get('title_id')
-        title = get_object_or_404(Title, pk=title_id)
-        author = self.context.get('request').user
-        if Review.objects.filter(author=author, title=title).exists():
+        title_id: int = self.context.get('view').kwargs.get('title_id')
+        author: User = self.context.get('request').user
+        if Review.objects.filter(author=author, title=title_id).exists():
             raise serializers.ValidationError('Вы уже оставили отзыв!!!')
         return data
 
