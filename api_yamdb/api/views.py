@@ -2,14 +2,14 @@ from typing import Any
 
 from django.core.cache import cache
 from django.core.mail import send_mail
-from django.db.utils import IntegrityError
+# from django.db.utils import IntegrityError
 from django.db.models import Avg, QuerySet
 from django.shortcuts import get_object_or_404
 from django.utils.crypto import get_random_string
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, viewsets
 from rest_framework.decorators import action
-from rest_framework.exceptions import ValidationError, APIException
+# from rest_framework.exceptions import ValidationError, APIException
 from rest_framework.filters import SearchFilter
 from rest_framework.permissions import (
     IsAdminUser,
@@ -161,28 +161,15 @@ class UserRegistrationView(generics.CreateAPIView):
 
     def perform_create(
         self, serializer: UserRegistrationSerializer
-    ) -> Response:
-        """Попытка создания пользователя и отправки кода подтверждения."""
-        serializer.is_valid(raise_exception=True)
-        try:
-            confirmation_code: str = get_random_string(length=LENGTH_CODE)
-            user, _ = User.objects.get_or_create(
-                username=serializer.data.get('username'),
-                email=serializer.data.get('email'),
-            )
-            cache.set(str(user.id), confirmation_code)
-            self.send_confirmation_code(user.email, confirmation_code)
-            return user
-        except IntegrityError as error:
-            raise ValidationError(
-                'Такое имя пользователя уже существует.'
-                if 'username' in str(error)
-                else 'Пользователь с таким электронным адресом уже существует.'
-            )
-        except APIException as error:
-            raise APIException(
-                f'Произошла ошибка при регистрации пользователя: {error}'
-            )
+    ) -> None:
+        """
+        Создает пользователя и отправляет код подтверждения
+        на указанный адрес электронной почты.
+        """
+        user: User = serializer.save()
+        confirmation_code = get_random_string(length=LENGTH_CODE)
+        cache.set(str(user.id), confirmation_code)
+        self.send_confirmation_code(user.email, confirmation_code)
 
     def send_confirmation_code(
         self, email: str, confirmation_code: str
