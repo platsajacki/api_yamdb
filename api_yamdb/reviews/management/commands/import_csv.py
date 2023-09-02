@@ -84,11 +84,12 @@ class Command(BaseCommand):
         """Импортирует отзывы из файла review.csv."""
         file_path: str = f'{DATA_DIR}/review.csv'
         field_names: list[str] = [
-            "id",
-            "review_id",
-            "text",
-            "author",
-            "pub_date",
+            'id',
+            'title_id',
+            'text',
+            'author',
+            'score',
+            'pub_date',
         ]
         self.import_data_from_csv(file_path, Review, field_names)
 
@@ -96,11 +97,11 @@ class Command(BaseCommand):
         """Импортирует комментарии из файла comments.csv."""
         file_path: str = f'{DATA_DIR}/comments.csv'
         field_names: list[str] = [
-            "id",
-            "review_id",
-            "text",
-            "author",
-            "pub_date",
+            'id',
+            'review_id',
+            'text',
+            'author',
+            'pub_date',
         ]
         self.import_data_from_csv(file_path, Comment, field_names)
 
