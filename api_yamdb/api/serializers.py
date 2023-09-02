@@ -108,6 +108,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         )
 
     def create(self, validated_data: dict[str, Any]) -> User:
+        """Создает нового пользователя на основе переданных данных."""
         try:
             user, _ = User.objects.get_or_create(
                 username=validated_data.get('username'),
