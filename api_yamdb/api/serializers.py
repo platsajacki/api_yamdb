@@ -3,7 +3,7 @@ from typing import Any
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.cache import cache
 from django.db.utils import IntegrityError
-from rest_framework import serializers
+from rest_framework import serializers, status
 from rest_framework.response import Response
 from reviews.models import Category, Comment, Genre, Review, Title
 
@@ -157,7 +157,7 @@ class UserTokenSerializer(serializers.ModelSerializer):
         username: str = attrs.get('username')
         confirmation_code: str = attrs.get('confirmation_code')
         if not User.objects.filter(username=username).exists():
-            return User.DoesNotExist()
+            return Response(status=status.HTTP_404_NOT_FOUND)
         if (
             len(confirmation_code) != LENGTH_CODE
             and confirmation_code != cache.get(username)
