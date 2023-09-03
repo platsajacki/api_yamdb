@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Union
 
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.cache import cache
@@ -149,7 +149,9 @@ class UserTokenSerializer(serializers.ModelSerializer):
             'confirmation_code'
         )
 
-    def validate(self, attrs: dict[str, str]) -> dict[str, str] | Response:
+    def validate(
+            self, attrs: dict[str, str]
+    ) -> Union[dict[str, str], Response]:
         """
         Проверяет существует пользователь с переданым username.
         Проверяет корректность confirmation_code.
