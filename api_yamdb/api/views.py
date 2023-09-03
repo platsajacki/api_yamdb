@@ -183,7 +183,7 @@ class UserTokenView(generics.CreateAPIView):
 class UserViewSet(viewsets.ModelViewSet):
     """ Представление для работы с пользователями в системе."""
     serializer_class = UserSerializer
-    queryset = User.objects.all()
+    queryset = User.objects.order_by('username').all()
     lookup_field = 'username'
     http_method_names = ['get', 'post', 'patch', 'delete']
     permission_classes = [IsAuthenticated, IsAdminOrRoleIsAdmin]
