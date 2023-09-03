@@ -36,8 +36,8 @@ from .serializers import (
 from reviews.models import Title, Category, Genre, Review
 from .mixins import CreateListDestroySearchViewSet
 from .permissions import (
-    AllowAdminOrAnonymousPermission,
-    AuthorModeratorAdminPermission,
+    IsAdminOrAnonymous,
+    IsAuthorOrModeratorOrAdmin,
     IsAdminOrRoleIsAdmin
 )
 
@@ -48,7 +48,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
     http_method_names = ['get', 'post', 'delete', 'patch']
     permission_classes = [
         IsAuthenticatedOrReadOnly,
-        AuthorModeratorAdminPermission
+        IsAuthorOrModeratorOrAdmin
     ]
 
     def get_title(self) -> Title:
@@ -74,7 +74,7 @@ class CommentViewSet(viewsets.ModelViewSet):
     http_method_names = ['get', 'post', 'delete', 'patch']
     permission_classes = [
         IsAuthenticatedOrReadOnly,
-        AuthorModeratorAdminPermission
+        IsAuthorOrModeratorOrAdmin
     ]
 
     def get_review(self) -> Review:
@@ -103,7 +103,7 @@ class TitleViewSet(viewsets.ModelViewSet):
     filterset_fields = ('year', 'name')
     permission_classes = (
         IsAuthenticatedOrReadOnly,
-        AllowAdminOrAnonymousPermission
+        IsAdminOrAnonymous
     )
 
     def get_queryset(self) -> QuerySet:
@@ -183,7 +183,7 @@ class UserTokenView(generics.CreateAPIView):
 class UserViewSet(viewsets.ModelViewSet):
     """ Представление для работы с пользователями в системе."""
     serializer_class = UserSerializer
-    queryset = User.objects.all()
+    queryset = User.objects.order_by('username').all()
     lookup_field = 'username'
     http_method_names = ['get', 'post', 'patch', 'delete']
     permission_classes = [IsAuthenticated, IsAdminOrRoleIsAdmin]

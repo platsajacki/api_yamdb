@@ -2,7 +2,7 @@ from rest_framework import mixins, viewsets
 from rest_framework.filters import SearchFilter
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
-from .permissions import AllowAdminOrAnonymousPermission
+from .permissions import IsAdminOrAnonymous
 
 
 class LookUpSlugFieldMixin:
@@ -36,5 +36,5 @@ class CreateListDestroySearchViewSet(CreateListDestroyViewSet):
     search_fields = ('name',)
     permission_classes = (
         IsAuthenticatedOrReadOnly,
-        AllowAdminOrAnonymousPermission,
+        IsAdminOrAnonymous,
     )

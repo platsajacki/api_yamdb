@@ -2,12 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 
 from .managers import UserManager
-
-ROLE_CHOICES = [
-    ('user', 'Пользователь'),
-    ('moderator', 'Модератор'),
-    ('admin', 'Администратор'),
-]
+from constants import ROLE_CHOICES, USER
 
 
 class User(AbstractUser):
@@ -26,7 +21,7 @@ class User(AbstractUser):
         'Роль',
         max_length=10,
         choices=ROLE_CHOICES,
-        default='user'
+        default=USER
     )
 
     objects = UserManager()
