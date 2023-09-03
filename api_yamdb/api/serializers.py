@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from reviews.models import Category, Comment, Genre, Review, Title
 
 from .mixins import LookUpSlugFieldMixin
-from constants import LENGTH_CODE
+from constants import LENGTH_CODE, ADMIN
 from users.models import User
 
 
@@ -184,7 +184,7 @@ class UserSerializer(serializers.ModelSerializer):
     def validate_role(self, value: str) -> str:
         """Проверяет, имеет ли текущий пользователь право назначать роли."""
         user: User = self.context['request'].user
-        if user.is_staff or user.role == 'admin':
+        if user.is_staff or user.role == ADMIN:
             return value
         raise serializers.ValidationError(
             'Назначать роль моджет только администратор.'
