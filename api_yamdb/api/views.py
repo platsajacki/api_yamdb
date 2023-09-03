@@ -6,13 +6,12 @@ from django.db.models import Avg, QuerySet
 from django.shortcuts import get_object_or_404
 from django.utils.crypto import get_random_string
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import generics, viewsets
+from rest_framework import generics, viewsets, status
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
 from rest_framework.permissions import (
-    IsAdminUser,
     IsAuthenticated,
-    IsAuthenticatedOrReadOnly,
+    IsAuthenticatedOrReadOnly
 )
 from rest_framework.response import Response
 from rest_framework.request import Request
@@ -38,7 +37,8 @@ from reviews.models import Title, Category, Genre, Review
 from .mixins import CreateListDestroySearchViewSet
 from .permissions import (
     AllowAdminOrAnonymousPermission,
-    AuthorModeratorAdminPermission
+    AuthorModeratorAdminPermission,
+    IsAdminOrRoleIsAdmin
 )
 
 
@@ -142,17 +142,18 @@ class UserRegistrationView(generics.CreateAPIView):
     """Представление для регистрации пользователя."""
     serializer_class = UserRegistrationSerializer
 
-    def perform_create(
-        self, serializer: UserRegistrationSerializer
-    ) -> None:
+    def post(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """
         Создает пользователя и отправляет код подтверждения
         на указанный адрес электронной почты.
         """
+        serializer: dict[str, str] = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
         user: User = serializer.save()
         confirmation_code: str = get_random_string(length=LENGTH_CODE)
         cache.set(user.username, confirmation_code)
         self.send_confirmation_code(user.email, confirmation_code)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def send_confirmation_code(
         self, email: str, confirmation_code: str
@@ -169,7 +170,7 @@ class UserTokenView(generics.CreateAPIView):
     """Получение пользователем JWT-токена."""
     serializer_class = UserTokenSerializer
 
-    def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+    def post(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """Обработка POST-запроса на получение JWT-токена."""
         serializer: dict[str, str] = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -182,19 +183,28 @@ class UserTokenView(generics.CreateAPIView):
 class UserViewSet(viewsets.ModelViewSet):
     """ Представление для работы с пользователями в системе."""
     serializer_class = UserSerializer
-    queryset = User.objects
+    queryset = User.objects.all()
     lookup_field = 'username'
     http_method_names = ['get', 'post', 'patch', 'delete']
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAuthenticated, IsAdminOrRoleIsAdmin]
     filter_backends = (SearchFilter,)
     search_fields = ('username',)
 
     @action(
         detail=False,
-        methods=['get', 'post'],
+        methods=['get', 'patch'],
         permission_classes=[IsAuthenticated],
     )
     def me(self, request: Request) -> Response:
         """Получает информацию о текущем пользователе."""
+        if request.method == 'PATCH':
+            serializer: UserSerializer = self.get_serializer(
+                request.user,
+                data=request.data,
+                partial=True
+            )
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data)
         serializer: UserSerializer = self.get_serializer(request.user)
         return Response(serializer.data)

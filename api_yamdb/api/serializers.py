@@ -1,5 +1,6 @@
 from typing import Any
 
+from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.cache import cache
 from django.db.utils import IntegrityError
 from rest_framework import serializers
@@ -98,7 +99,12 @@ class ReviewSerializers(serializers.ModelSerializer):
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
     """Сериализатор регистрации пользователя."""
-    username = serializers.CharField(max_length=150)
+    username = serializers.CharField(
+        max_length=150,
+        validators=[
+            UnicodeUsernameValidator()
+        ]
+    )
     email = serializers.EmailField(max_length=254)
 
     class Meta:
@@ -134,7 +140,6 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
 class UserTokenSerializer(serializers.ModelSerializer):
     """Сериализатор для подтверждения токенов пользователя."""
-    username = serializers.CharField(max_length=150)
     confirmation_code = serializers.CharField()
 
     class Meta:
@@ -168,7 +173,7 @@ class UserSerializer(serializers.ModelSerializer):
     def validate_role(self, value: str) -> str:
         """Проверяет, имеет ли текущий пользователь право назначать роли."""
         user: User = self.context['request'].user
-        if user.is_staff:
+        if user.is_staff or user.role == 'admin':
             return value
         raise serializers.ValidationError(
             'Назначать роль моджет только администратор.'
