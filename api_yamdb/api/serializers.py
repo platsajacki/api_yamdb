@@ -1,13 +1,14 @@
 from typing import Any
 
+from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.cache import cache
 from django.db.utils import IntegrityError
 from rest_framework import serializers
-from rest_framework.exceptions import ValidationError
+from rest_framework.response import Response
 from reviews.models import Category, Comment, Genre, Review, Title
 
 from .mixins import LookUpSlugFieldMixin
-from constants import LENGTH_CODE
+from constants import LENGTH_CODE, ADMIN
 from users.models import User
 
 
@@ -98,7 +99,12 @@ class ReviewSerializers(serializers.ModelSerializer):
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
     """Сериализатор регистрации пользователя."""
-    username = serializers.CharField(max_length=150)
+    username = serializers.CharField(
+        max_length=150,
+        validators=[
+            UnicodeUsernameValidator()
+        ]
+    )
     email = serializers.EmailField(max_length=254)
 
     class Meta:
@@ -116,7 +122,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
                 email=validated_data.get('email'),
             )
         except IntegrityError as error:
-            raise ValidationError(
+            raise serializers.ValidationError(
                 'Такое имя пользователя уже существует.'
                 if 'username' in str(error)
                 else 'Пользователь с таким электронным адресом уже существует.'
@@ -134,7 +140,6 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
 class UserTokenSerializer(serializers.ModelSerializer):
     """Сериализатор для подтверждения токенов пользователя."""
-    username = serializers.CharField(max_length=150)
     confirmation_code = serializers.CharField()
 
     class Meta:
@@ -144,12 +149,23 @@ class UserTokenSerializer(serializers.ModelSerializer):
             'confirmation_code'
         )
 
-    def validate_confirmation_code(self, value: str) -> str:
-        """Проверка кода подтверждения."""
-        username: str = self.context.get('request').data.get('username')
-        if len(value) == LENGTH_CODE and value == cache.get(username):
-            return value
-        raise serializers.ValidationError('Код подтверждения введен неверно.')
+    def validate(self, attrs: dict[str, str]) -> dict[str, str] | Response:
+        """
+        Проверяет существует пользователь с переданым username.
+        Проверяет корректность confirmation_code.
+        """
+        username: str = attrs.get('username')
+        confirmation_code: str = attrs.get('confirmation_code')
+        if not User.objects.filter(username=username).exists():
+            return User.DoesNotExist()
+        if (
+            len(confirmation_code) != LENGTH_CODE
+            and confirmation_code != cache.get(username)
+        ):
+            raise serializers.ValidationError(
+                'Код подтверждения введен неверно.'
+            )
+        return super().validate(attrs)
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -168,7 +184,7 @@ class UserSerializer(serializers.ModelSerializer):
     def validate_role(self, value: str) -> str:
         """Проверяет, имеет ли текущий пользователь право назначать роли."""
         user: User = self.context['request'].user
-        if user.is_staff:
+        if user.is_staff or user.role == ADMIN:
             return value
         raise serializers.ValidationError(
             'Назначать роль моджет только администратор.'
