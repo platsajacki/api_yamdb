@@ -168,7 +168,7 @@ class UserSerializer(serializers.ModelSerializer):
     def validate_role(self, value: str) -> str:
         """Проверяет, имеет ли текущий пользователь право назначать роли."""
         user: User = self.context['request'].user
-        if user.is_staff:
+        if user.is_staff or user.role == 'admin':
             return value
         raise serializers.ValidationError(
             'Назначать роль моджет только администратор.'
