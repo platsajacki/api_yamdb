@@ -6,16 +6,6 @@ from rest_framework.views import View
 from constants import ADMIN, MODERATOR
 
 
-class IsAdminOrAnonymous(permissions.BasePermission):
-    """
-    Разрешает доступ для анонимных пользователей
-    или пользователей с ролью admin.
-    """
-    def has_permission(self, request: Request, view: View) -> bool:
-        """Проверяет разрешение доступа на уровне представления."""
-        return request.user.is_anonymous or request.user.role == ADMIN
-
-
 class IsAuthorOrModeratorOrAdmin(permissions.BasePermission):
     """
     Позволяет доступ аутентифицированным пользователям с ролью 'Admin',
