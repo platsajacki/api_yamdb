@@ -105,8 +105,10 @@ class TitleViewSet(AddPermissionsMixin, viewsets.ModelViewSet):
     def get_queryset(self) -> QuerySet:
         """Формирует и возвращает queryset."""
         queryset: QuerySet = super().get_queryset()
-        return queryset.order_by('-year').annotate(
-            rating=Avg('reviews__score')
+        return (
+            queryset
+            .order_by('-year')
+            .annotate(rating=Avg('reviews__score'))
         )
 
 

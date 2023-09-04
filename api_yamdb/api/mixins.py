@@ -1,6 +1,10 @@
 from rest_framework import mixins, viewsets
 from rest_framework.filters import SearchFilter
-from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny
+from rest_framework.permissions import (
+    IsAuthenticatedOrReadOnly,
+    AllowAny,
+    BasePermission,
+)
 
 from .permissions import IsAdminOrRoleIsAdmin
 
@@ -30,7 +34,9 @@ class CreateListDestroyViewSet(
 
 
 class AddPermissionsMixin:
-    def get_permissions(self):
+    """Добавляет определенные пермишены для различных методов запроса."""
+    def get_permissions(self) -> list[BasePermission]:
+        """Возвращает список разрешений, применяемых к запросу."""
         if self.request.method == 'GET':
             return [AllowAny()]
         return [IsAuthenticatedOrReadOnly(), IsAdminOrRoleIsAdmin()]
