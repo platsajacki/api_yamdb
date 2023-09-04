@@ -1,8 +1,12 @@
 from rest_framework import mixins, viewsets
 from rest_framework.filters import SearchFilter
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.permissions import (
+    IsAuthenticatedOrReadOnly,
+    AllowAny,
+    BasePermission,
+)
 
-from .permissions import IsAdminOrAnonymous
+from .permissions import IsAdminOrRoleIsAdmin
 
 
 class LookUpSlugFieldMixin:
@@ -29,12 +33,19 @@ class CreateListDestroyViewSet(
     ...
 
 
-class CreateListDestroySearchViewSet(CreateListDestroyViewSet):
+class AddPermissionsMixin:
+    """Добавляет определенные пермишены для различных методов запроса."""
+    def get_permissions(self) -> list[BasePermission]:
+        """Возвращает список разрешений, применяемых к запросу."""
+        if self.request.method == 'GET':
+            return [AllowAny()]
+        return [IsAuthenticatedOrReadOnly(), IsAdminOrRoleIsAdmin()]
+
+
+class CreateListDestroySearchViewSet(
+    AddPermissionsMixin, CreateListDestroyViewSet
+):
     """Миксин для добавления возможности поиска по полю и пермишенов."""
     lookup_field = 'slug'
     filter_backends = (SearchFilter,)
     search_fields = ('name',)
-    permission_classes = (
-        IsAuthenticatedOrReadOnly,
-        IsAdminOrAnonymous,
-    )
