@@ -6,7 +6,7 @@ from rest_framework.permissions import (
     BasePermission,
 )
 
-from .permissions import OnlyIsAdminOrRoleIsAdmin
+from .permissions import IsAdminOnly
 
 
 class LookUpSlugFieldMixin:
@@ -39,7 +39,7 @@ class AddPermissionsMixin:
         """Возвращает список разрешений, применяемых к запросу."""
         if self.request.method == 'GET':
             return [AllowAny()]
-        return [IsAuthenticatedOrReadOnly(), OnlyIsAdminOrRoleIsAdmin()]
+        return [IsAuthenticatedOrReadOnly(), IsAdminOnly()]
 
 
 class CreateListDestroySearchViewSet(

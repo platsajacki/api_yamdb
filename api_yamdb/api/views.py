@@ -20,8 +20,8 @@ from rest_framework_simplejwt.tokens import Token, RefreshToken
 from .filters import TitleFilter
 from .mixins import CreateListDestroySearchViewSet, AddPermissionsMixin
 from .permissions import (
-    OnlyIsAdminOrRoleIsAdmin,
-    IsAdminOrRoleIsAdminObject,
+    IsAdminOnly,
+    IsAdminObject,
     IsAuthor,
     IsModerator
 )
@@ -46,7 +46,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
     http_method_names = ['get', 'post', 'delete', 'patch']
     permission_classes = [
         IsAuthenticatedOrReadOnly,
-        IsAdminOrRoleIsAdminObject
+        IsAdminObject
         | IsModerator
         | IsAuthor
     ]
@@ -74,7 +74,7 @@ class CommentViewSet(viewsets.ModelViewSet):
     http_method_names = ['get', 'post', 'delete', 'patch']
     permission_classes = [
         IsAuthenticatedOrReadOnly,
-        IsAdminOrRoleIsAdminObject
+        IsAdminObject
         | IsModerator
         | IsAuthor
     ]
@@ -175,7 +175,7 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.order_by('username').all()
     lookup_field = 'username'
     http_method_names = ['get', 'post', 'patch', 'delete']
-    permission_classes = [IsAuthenticated, OnlyIsAdminOrRoleIsAdmin]
+    permission_classes = [IsAuthenticated, IsAdminOnly]
     filter_backends = (SearchFilter,)
     search_fields = ('username',)
 
