@@ -3,7 +3,6 @@ from typing import Any
 from django.db.models import Avg, QuerySet
 from django_filters.rest_framework import DjangoFilterBackend
 from django.core.cache import cache
-from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from django.utils.crypto import get_random_string
 from rest_framework import generics, viewsets, status
@@ -20,8 +19,8 @@ from rest_framework_simplejwt.tokens import Token, RefreshToken
 from .filters import TitleFilter
 from .mixins import CreateListDestroySearchViewSet, AddPermissionsMixin
 from .permissions import (
-    OnlyIsAdminOrRoleIsAdmin,
-    IsAdminOrRoleIsAdminObject,
+    IsAdminOnly,
+    IsAdminObject,
     IsAuthor,
     IsModerator
 )
@@ -35,9 +34,10 @@ from .serializers import (
     CommentSerializers,
     ReviewSerializers,
 )
+from .utils import send_confirmation_code
 from constants import LENGTH_CODE
-from users.models import User
 from reviews.models import Title, Category, Genre, Review
+from users.models import User
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
@@ -46,7 +46,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
     http_method_names = ['get', 'post', 'delete', 'patch']
     permission_classes = [
         IsAuthenticatedOrReadOnly,
-        IsAdminOrRoleIsAdminObject
+        IsAdminObject
         | IsModerator
         | IsAuthor
     ]
@@ -74,7 +74,7 @@ class CommentViewSet(viewsets.ModelViewSet):
     http_method_names = ['get', 'post', 'delete', 'patch']
     permission_classes = [
         IsAuthenticatedOrReadOnly,
-        IsAdminOrRoleIsAdminObject
+        IsAdminObject
         | IsModerator
         | IsAuthor
     ]
@@ -141,18 +141,8 @@ class UserRegistrationView(generics.CreateAPIView):
         user: User = serializer.save()
         confirmation_code: str = get_random_string(length=LENGTH_CODE)
         cache.set(user.username, confirmation_code)
-        self.send_confirmation_code(user.email, confirmation_code)
+        send_confirmation_code(user.email, confirmation_code)
         return Response(serializer.data, status=status.HTTP_200_OK)
-
-    def send_confirmation_code(
-        self, email: str, confirmation_code: str
-    ) -> None:
-        """Отправка кода подтверждения по электронной почте."""
-        subject: str = 'Код подтверждения регистрации в YaMDB'
-        message: str = f'Ваш код подтверждения: {confirmation_code}'
-        from_email: str = 'yamdb@gmail.com'
-        recipient_list: list[str] = [email]
-        send_mail(subject, message, from_email, recipient_list)
 
 
 class UserTokenView(generics.CreateAPIView):
@@ -175,25 +165,28 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.order_by('username').all()
     lookup_field = 'username'
     http_method_names = ['get', 'post', 'patch', 'delete']
-    permission_classes = [IsAuthenticated, OnlyIsAdminOrRoleIsAdmin]
+    permission_classes = [IsAuthenticated, IsAdminOnly]
     filter_backends = (SearchFilter,)
     search_fields = ('username',)
 
     @action(
         detail=False,
-        methods=['get', 'patch'],
+        methods=['get'],
         permission_classes=[IsAuthenticated],
     )
     def me(self, request: Request) -> Response:
         """Получает информацию о текущем пользователе."""
-        if request.method == 'PATCH':
-            serializer: UserSerializer = self.get_serializer(
-                request.user,
-                data=request.data,
-                partial=True
-            )
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            return Response(serializer.data)
         serializer: UserSerializer = self.get_serializer(request.user)
+        return Response(serializer.data)
+
+    @me.mapping.patch
+    def patch_me(self, request: Request) -> Response:
+        """Изменяет информацию о текущем пользователе."""
+        serializer: UserSerializer = self.get_serializer(
+            request.user,
+            data=request.data,
+            partial=True
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
         return Response(serializer.data)

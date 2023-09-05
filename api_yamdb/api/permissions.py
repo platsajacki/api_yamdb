@@ -6,7 +6,7 @@ from rest_framework.views import View
 from constants import ADMIN, MODERATOR
 
 
-class OnlyIsAdminOrRoleIsAdmin(permissions.BasePermission):
+class IsAdminOnly(permissions.BasePermission):
     """
     Только пользователи с правами администратора (is_staff)
     или ролью 'admin' имеют разрешение на доступ.
@@ -32,7 +32,7 @@ class IsAuthor(permissions.BasePermission):
         )
 
 
-class IsAdminOrRoleIsAdminObject(permissions.BasePermission):
+class IsAdminObject(permissions.BasePermission):
     """
     Пользователи с правами администратора (is_staff)
     или ролью 'admin' имеют разрешение на доступ.

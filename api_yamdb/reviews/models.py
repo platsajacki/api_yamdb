@@ -3,35 +3,24 @@ import datetime as dt
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 
+from .abstracts import BaseNameSlugModel
 from users.models import User
 
 
-class Category(models.Model):
+class Category(BaseNameSlugModel):
     """Модель для хранения информации о категории произведения."""
-    name = models.CharField('Название', max_length=256)
-    slug = models.SlugField('Слаг', max_length=50, unique=True)
 
     class Meta:
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
 
-    def __str__(self) -> str:
-        """Возвращает строковое представление категории (ее название)."""
-        return self.name
 
-
-class Genre(models.Model):
+class Genre(BaseNameSlugModel):
     """Модель для хранения информации о жанре произведения."""
-    name = models.CharField('Название', max_length=256)
-    slug = models.SlugField('Слаг', max_length=50, unique=True)
 
     class Meta:
         verbose_name = 'Жанр'
         verbose_name_plural = 'Жанры'
-
-    def __str__(self) -> str:
-        """Возвращает строковое представление жанра (его название)."""
-        return self.name
 
 
 class Title(models.Model):
@@ -51,7 +40,7 @@ class Title(models.Model):
         related_name='titles',
         verbose_name='Категория',
     )
-    genre = models.ManyToManyField(Genre, through='GenreTitle')
+    genre = models.ManyToManyField(Genre, through='TitleGenre')
 
     class Meta:
         verbose_name = 'Произведение'
@@ -62,7 +51,7 @@ class Title(models.Model):
         return self.name
 
 
-class GenreTitle(models.Model):
+class TitleGenre(models.Model):
     """Промежуточная модель для хранения ключей genre и title."""
     genre = models.ForeignKey(
         Genre, on_delete=models.SET_NULL, null=True, verbose_name='Жанр'
