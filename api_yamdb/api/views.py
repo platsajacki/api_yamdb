@@ -34,10 +34,10 @@ from .serializers import (
     CommentSerializers,
     ReviewSerializers,
 )
+from .utils import send_confirmation_code
 from constants import LENGTH_CODE
 from reviews.models import Title, Category, Genre, Review
 from users.models import User
-from utils import send_confirmation_code
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
@@ -171,19 +171,22 @@ class UserViewSet(viewsets.ModelViewSet):
 
     @action(
         detail=False,
-        methods=['get', 'patch'],
+        methods=['get'],
         permission_classes=[IsAuthenticated],
     )
     def me(self, request: Request) -> Response:
         """Получает информацию о текущем пользователе."""
-        if request.method == 'PATCH':
-            serializer: UserSerializer = self.get_serializer(
-                request.user,
-                data=request.data,
-                partial=True
-            )
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            return Response(serializer.data)
         serializer: UserSerializer = self.get_serializer(request.user)
+        return Response(serializer.data)
+
+    @me.mapping.patch
+    def patch_me(self, request: Request) -> Response:
+        """Изменяет информацию о текущем пользователе."""
+        serializer: UserSerializer = self.get_serializer(
+            request.user,
+            data=request.data,
+            partial=True
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
         return Response(serializer.data)
