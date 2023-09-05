@@ -2,11 +2,17 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 
 from .managers import UserManager
-from constants import ROLE_CHOICES, USER
+from constants import USER, MODERATOR, ADMIN
 
 
 class User(AbstractUser):
     """Кастомная модель пользователя."""
+    class Role(models.TextChoices):
+        """Перечисление для ролей пользователей."""
+        USER = USER, 'Пользователь'
+        ADMIN = ADMIN, 'Админ'
+        MODERATOR = MODERATOR, 'Модератор'
+
     email = models.EmailField(
         'Электронная почта',
         unique=True,
@@ -20,8 +26,8 @@ class User(AbstractUser):
     role = models.CharField(
         'Роль',
         max_length=10,
-        choices=ROLE_CHOICES,
-        default=USER
+        choices=Role.choices,
+        default=Role.USER
     )
 
     objects = UserManager()
