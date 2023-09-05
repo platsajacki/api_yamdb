@@ -6,21 +6,36 @@ from rest_framework.views import View
 from constants import ADMIN, MODERATOR
 
 
-class IsAdminOrAnonymous(permissions.BasePermission):
+class OnlyIsAdminOrRoleIsAdmin(permissions.BasePermission):
     """
-    Разрешает доступ для анонимных пользователей
-    или пользователей с ролью admin.
+    Только пользователи с правами администратора (is_staff)
+    или ролью 'admin' имеют разрешение на доступ.
     """
     def has_permission(self, request: Request, view: View) -> bool:
         """Проверяет разрешение доступа на уровне представления."""
-        return request.user.is_anonymous or request.user.role == ADMIN
+        return (
+            request.user.is_staff
+            or request.user.role == ADMIN
+        )
 
 
-class IsAuthorOrModeratorOrAdmin(permissions.BasePermission):
+class IsAuthor(permissions.BasePermission):
+    """Автор объекта имеет разрешение на доступ."""
+    def has_object_permission(
+            self, request: Request, view: View, obj: Model
+    ) -> bool:
+        """Проверяет разрешение доступа к объекту."""
+        return (
+            request.method in permissions.SAFE_METHODS
+            or request.user.is_authenticated
+            and obj.author == request.user
+        )
+
+
+class IsAdminOrRoleIsAdminObject(permissions.BasePermission):
     """
-    Позволяет доступ аутентифицированным пользователям с ролью 'Admin',
-    'Moderator' или автору объекта. Анонимным пользователям разрешены
-    только безопасные запросы.
+    Пользователи с правами администратора (is_staff)
+    или ролью 'admin' имеют разрешение на доступ.
     """
     def has_object_permission(
             self, request: Request, view: View, obj: Model
@@ -30,21 +45,20 @@ class IsAuthorOrModeratorOrAdmin(permissions.BasePermission):
             request.method in permissions.SAFE_METHODS
             or request.user.is_authenticated
             and (
-                obj.author == request.user
-                or request.user.role == MODERATOR
-                or request.user.role == ADMIN
+                request.user.role == ADMIN
+                or request.user.is_staff
             )
         )
 
 
-class IsAdminOrRoleIsAdmin(permissions.BasePermission):
-    """
-    Пользователи с правами администратора (is_staff)
-    или ролью 'admin' имеют разрешение на доступ.
-    """
-    def has_permission(self, request: Request, view: View) -> bool:
-        """Проверяет разрешение доступа на уровне представления."""
+class IsModerator(permissions.BasePermission):
+    """Пользователь с ролью 'Moderator' имеет разрешение на доступ."""
+    def has_object_permission(
+            self, request: Request, view: View, obj: Model
+    ) -> bool:
+        """Проверяет разрешение доступа к объекту."""
         return (
-            request.user.is_staff
-            or request.user.role == ADMIN
+            request.method in permissions.SAFE_METHODS
+            or request.user.is_authenticated
+            and request.user.role == MODERATOR
         )

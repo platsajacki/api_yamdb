@@ -189,5 +189,5 @@ class UserSerializer(serializers.ModelSerializer):
         if user.is_staff or user.role == ADMIN:
             return value
         raise serializers.ValidationError(
-            'Назначать роль моджет только администратор.'
+            'Назначать роль может только администратор.'
         )
