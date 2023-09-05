@@ -1,11 +1,11 @@
 from typing import Any
 
+from django.db.models import Avg, QuerySet
+from django_filters.rest_framework import DjangoFilterBackend
 from django.core.cache import cache
 from django.core.mail import send_mail
-from django.db.models import Avg, QuerySet
 from django.shortcuts import get_object_or_404
 from django.utils.crypto import get_random_string
-from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, viewsets, status
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
@@ -16,29 +16,28 @@ from rest_framework.permissions import (
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework_simplejwt.tokens import Token, RefreshToken
-from rest_framework import viewsets
 
+from .filters import TitleFilter
+from .mixins import CreateListDestroySearchViewSet, AddPermissionsMixin
+from .permissions import (
+    OnlyIsAdminOrRoleIsAdmin,
+    IsAdminOrRoleIsAdminObject,
+    IsAuthor,
+    IsModerator
+)
 from .serializers import (
     UserRegistrationSerializer,
     UserTokenSerializer,
     UserSerializer,
-)
-from constants import LENGTH_CODE
-from users.models import User
-from .serializers import (
     TitleSerializer,
     CategorySerializer,
     GenreSerializer,
     CommentSerializers,
     ReviewSerializers,
 )
+from constants import LENGTH_CODE
+from users.models import User
 from reviews.models import Title, Category, Genre, Review
-from .mixins import CreateListDestroySearchViewSet, AddPermissionsMixin
-from .permissions import (
-    IsAuthorOrModeratorOrAdmin,
-    IsAdminOrRoleIsAdmin
-)
-from .filters import TitleFilter
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
@@ -47,7 +46,9 @@ class ReviewViewSet(viewsets.ModelViewSet):
     http_method_names = ['get', 'post', 'delete', 'patch']
     permission_classes = [
         IsAuthenticatedOrReadOnly,
-        IsAuthorOrModeratorOrAdmin
+        IsAdminOrRoleIsAdminObject
+        | IsModerator
+        | IsAuthor
     ]
 
     def get_title(self) -> Title:
@@ -73,7 +74,9 @@ class CommentViewSet(viewsets.ModelViewSet):
     http_method_names = ['get', 'post', 'delete', 'patch']
     permission_classes = [
         IsAuthenticatedOrReadOnly,
-        IsAuthorOrModeratorOrAdmin
+        IsAdminOrRoleIsAdminObject
+        | IsModerator
+        | IsAuthor
     ]
 
     def get_review(self) -> Review:
@@ -172,7 +175,7 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.order_by('username').all()
     lookup_field = 'username'
     http_method_names = ['get', 'post', 'patch', 'delete']
-    permission_classes = [IsAuthenticated, IsAdminOrRoleIsAdmin]
+    permission_classes = [IsAuthenticated, OnlyIsAdminOrRoleIsAdmin]
     filter_backends = (SearchFilter,)
     search_fields = ('username',)
 
