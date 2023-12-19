@@ -140,6 +140,12 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
 class UserTokenSerializer(serializers.ModelSerializer):
     """Сериализатор для подтверждения токенов пользователя."""
+    username = serializers.CharField(
+        max_length=150,
+        validators=[
+            UnicodeUsernameValidator()
+        ]
+    )
     confirmation_code = serializers.CharField()
 
     class Meta:
