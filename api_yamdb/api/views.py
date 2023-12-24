@@ -92,7 +92,7 @@ class CommentViewSet(viewsets.ModelViewSet):
         )
 
     def perform_create(self, serializer: CommentSerializers) -> None:
-        """Создаем комментарий.Присваеваем текущего пользователя и отзыв."""
+        """Создаем комментарий. Присваеваем текущего пользователя и отзыв."""
         serializer.save(author=self.request.user, review=self.get_review())
 
 

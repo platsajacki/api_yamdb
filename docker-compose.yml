@@ -1,0 +1,35 @@
+version: '3'
+
+volumes:
+  static:
+  media:
+  pg_data:
+
+services:
+  db:
+    image: postgres:13
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    env_file: .env
+
+  backend:
+    image: platsajacki/api_yamdb_backend
+    build: ./
+    env_file: .env
+    volumes:
+      - static:/static
+      - media:/media
+    depends_on:
+      - db
+
+  gateway:
+    image: platsajacki/api_yamdb_gateway
+    build: ./nginx/
+    env_file: .env
+    ports:
+      - 8002:80
+    volumes:
+      - static:/static
+      - media:/media
+    depends_on:
+      - backend
