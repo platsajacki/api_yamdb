@@ -1,22 +1,28 @@
 from datetime import timedelta
+from os import getenv
 from pathlib import Path
+
+from dotenv import load_dotenv
 
 from constants import LIFE_CONFIRMATION_CODE
 
+load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'p&l%385148kslhtyn^##a1)ilz@4zqj=rq&agdol^##zgl9(vs'
+SECRET_KEY = getenv('SECRET_KEY')
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = getenv('DEBUG') == 'True'
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = getenv('ALLOWED_HOSTS', 'localhost, 127.0.0.1').split(', ')
 
+CSRF_TRUSTED_ORIGINS = getenv(
+    'CSRF_TRUSTED_ORIGINS',
+    'https://127.0.0.1, https://localhost, '
+    'https://www.127.0.0.1, https://www.localhost'
+).split(', ')
 
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -86,8 +92,12 @@ WSGI_APPLICATION = 'api_yamdb.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': getenv('POSTGRES_DB', 'django'),
+        'USER': getenv('POSTGRES_USER', 'django'),
+        'PASSWORD': getenv('POSTGRES_PASSWORD', ''),
+        'HOST': getenv('DB_HOST', ''),
+        'PORT': getenv('DB_PORT', 5432),
     }
 }
 
@@ -125,9 +135,12 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 
-STATIC_URL = '/static/'
+STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'collected_static'
+STATICFILES_DIRS = [BASE_DIR / 'static']
 
-STATICFILES_DIRS = ((BASE_DIR / 'static/'),)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 # EMAIL BACKEND
 
