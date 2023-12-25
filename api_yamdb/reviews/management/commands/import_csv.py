@@ -6,7 +6,7 @@ from django.contrib.auth import get_user_model
 from django.conf import settings
 from django.db import models
 
-from reviews.models import Category, Title, Genre, GenreTitle, Comment, Review
+from reviews.models import Category, Title, Genre, TitleGenre, Comment, Review
 
 DATA_DIR: str = f'{settings.BASE_DIR}/static/data'
 User = get_user_model()
@@ -109,7 +109,7 @@ class Command(BaseCommand):
         """Импортирует связь жанров и произведений из файла genre_title.csv."""
         file_path: str = f'{DATA_DIR}/genre_title.csv'
         field_names: list[str] = ['id', 'title_id', 'genre_id']
-        self.import_data_from_csv(file_path, GenreTitle, field_names)
+        self.import_data_from_csv(file_path, TitleGenre, field_names)
 
     def import_users(self) -> None:
         """Импортирует пользователей из файла users.csv."""
