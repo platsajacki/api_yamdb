@@ -13,7 +13,7 @@ services:
     env_file: .env
 
   backend:
-    image: platsajacki/api_yamdb_backend
+    image: ${DOCKER_USERNAME}/api_yamdb_backend
     build: ./
     env_file: .env
     volumes:
@@ -23,7 +23,7 @@ services:
       - db
 
   gateway:
-    image: platsajacki/api_yamdb_gateway
+    image: ${DOCKER_USERNAME}/api_yamdb_gateway
     build: ./nginx/
     env_file: .env
     ports:
