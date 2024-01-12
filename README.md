@@ -58,9 +58,9 @@ https://menyukhov-apiyamdb.ddns.net/redoc/
     ```
 
 6. Если потребуется работа в панели администратора, создайте суперпользователя:
-  ```bash
-  python manage.py createsuperuser
-  ```
+    ```bash
+    python manage.py createsuperuser
+    ```
 
 7. Выйдете из контейнера и перенесите статику в volume:
     ```bash
